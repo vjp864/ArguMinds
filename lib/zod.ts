@@ -28,3 +28,10 @@ export const updateCaseSchema = z.object({
   type: z.string().optional(),
   status: z.enum(["EN_COURS", "TERMINE", "ARCHIVE"]),
 })
+
+export const argumentSchema = z.object({
+  title: z.string().min(1, "Le titre est requis"),
+  content: z.string().min(1, "Le contenu est requis"),
+  type: z.enum(["PRINCIPAL", "SUPPORT", "OBJECTION", "REFUTATION"]),
+  parentId: z.string().optional(),
+})

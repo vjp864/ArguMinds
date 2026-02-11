@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@xyflow/react/dist/style.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -117,7 +118,7 @@
 }
 
 @layer base {
-  * {
+  *:not(.react-flow *) {
     @apply border-border outline-ring/50;
   }
   body {

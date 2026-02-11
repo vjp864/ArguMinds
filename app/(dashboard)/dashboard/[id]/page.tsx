@@ -3,11 +3,13 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { auth } from "@/auth"
 import { getCase } from "@/lib/queries/cases"
+import { getArgumentsForCase } from "@/lib/queries/arguments"
 import { STATUS_LABELS } from "@/lib/constants"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ArgumentGraph } from "@/components/graph/argument-graph"
 import { CaseActions } from "./case-actions"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline"> = {
@@ -27,6 +29,8 @@ export default async function CaseDetailPage({
   const { id } = await params
   const caseData = await getCase(id, session.user.id)
   if (!caseData) notFound()
+
+  const args = await getArgumentsForCase(id, session.user.id)
 
   return (
     <div className="space-y-6">
@@ -73,33 +77,20 @@ export default async function CaseDetailPage({
 
       <Separator />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Arguments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {caseData.arguments.length === 0
-                ? "Le graphe d'arguments sera disponible dans la Phase 3."
-                : `${caseData.arguments.length} argument(s)`}
-            </p>
-          </CardContent>
-        </Card>
+      <ArgumentGraph arguments={args} caseId={id} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Sources</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {caseData.sources.length === 0
-                ? "La gestion des sources sera disponible dans la Phase 4."
-                : `${caseData.sources.length} source(s)`}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Sources</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            {caseData.sources.length === 0
+              ? "La gestion des sources sera disponible dans la Phase 4."
+              : `${caseData.sources.length} source(s)`}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
