@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚖️ ARGUMINDS – Plateforme d'Intelligence Argumentative
 
-## Getting Started
+**ARGUMINDS** est un outil SaaS conçu pour les avocats et les débatteurs. Il permet de structurer des raisonnements complexes, de mapper des arguments sous forme de graphes logiques et de centraliser les sources juridiques.
 
-First, run the development server:
+---
+
+## 🚀 Stack Technique
+
+- **Framework** : Next.js 14+ (App Router)
+- **Authentification** : NextAuth.js
+- **Base de données** : PostgreSQL (Neon.tech)
+- **ORM** : Prisma
+- **UI** : Tailwind CSS + Shadcn/UI
+- **Visualisation** : React Flow (pour les graphes d'arguments)
+- **Déploiement** : Vercel
+
+---
+
+## 📂 Structure des Dossiers
+
+```
+/
+├── app/                # Pages et API Routes (App Router)
+│   ├── (auth)/         # Connexion / Inscription
+│   ├── (dashboard)/    # Interface de gestion des dossiers
+│   └── api/            # Endpoints API (Auth, Webhooks)
+├── components/         # Composants React (UI & Editor)
+├── lib/                # Config Prisma, NextAuth et utilitaires
+├── prisma/             # Schéma et migrations de base de données
+└── types/              # Interfaces TypeScript
+```
+
+---
+
+## 🛠️ Installation et Configuration
+
+### Prérequis
+
+- Node.js 18+
+- npm, yarn, pnpm ou bun
+- Un compte [Neon.tech](https://neon.tech) pour PostgreSQL
+
+### 1. Cloner le projet
+
+```bash
+git clone <votre-repo>
+cd argumenter
+```
+
+### 2. Variables d'Environnement
+
+Créez un fichier `.env` à la racine :
+
+```env
+DATABASE_URL="votre_url_postgresql_neon"
+NEXTAUTH_SECRET="votre_secret_genere"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+> **Astuce** : Générez un secret avec `openssl rand -base64 32`
+
+### 3. Installation des dépendances
+
+```bash
+npm install
+# ou
+yarn install
+# ou
+pnpm install
+# ou
+bun install
+```
+
+### 4. Configuration de la base de données
+
+```bash
+# Génération du client Prisma
+npx prisma generate
+
+# Synchronisation de la base de données
+npx prisma db push
+
+# (Optionnel) Interface d'administration Prisma
+npx prisma studio
+```
+
+### 5. Lancer le serveur de développement
 
 ```bash
 npm run dev
-# or
+# ou
 yarn dev
-# or
+# ou
 pnpm dev
-# or
+# ou
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗺️ Roadmap de Développement
 
-## Learn More
+### Phase 1 : Fondations
+- [ ] Setup Next.js, Tailwind, Shadcn
+- [ ] Schéma Prisma (User, Case, Argument)
+- [ ] Auth avec NextAuth (Email/Password)
 
-To learn more about Next.js, take a look at the following resources:
+### Phase 2 : Gestion des Dossiers
+- [ ] Dashboard : Liste et création de "Cases"
+- [ ] Logique de rôles (Avocat vs Débatteur)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Phase 3 : Le Graph Engine
+- [ ] Intégration de React Flow
+- [ ] CRUD des arguments (nœuds) avec relations parents/enfants
+- [ ] Liaison des sources (URL/Texte) aux arguments
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Phase 4 : Export & Finalisation
+- [ ] Exportation en PDF/Word
+- [ ] Nettoyage de l'UI et déploiement sur Vercel
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛡️ Sécurité
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Utilisation de **Server Actions** avec validation de session
+- Validation des données avec **Zod**
+- Protection des routes via le middleware **NextAuth**
+
+---
+
+## 📚 Ressources Next.js
+
+Pour en savoir plus sur Next.js :
+
+- [Documentation Next.js](https://nextjs.org/docs) - fonctionnalités et API
+- [Learn Next.js](https://nextjs.org/learn) - tutoriel interactif
+- [Dépôt GitHub Next.js](https://github.com/vercel/next.js)
+
+---
+
+## 🚢 Déploiement sur Vercel
+
+Le moyen le plus simple de déployer cette application est d'utiliser la [plateforme Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
+
+Consultez la [documentation de déploiement Next.js](https://nextjs.org/docs/app/building-your-application/deploying) pour plus de détails.
+
+---
+
+## ⚠️ Disclaimer
+
+Ce projet est un outil d'aide à la décision. **L'humain reste au centre de la stratégie argumentative.**
