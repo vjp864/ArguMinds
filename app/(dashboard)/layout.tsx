@@ -11,7 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { ROLE_LABELS } from "@/lib/constants"
 
 export default async function DashboardLayout({
   children,
@@ -51,7 +53,12 @@ export default async function DashboardLayout({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="flex flex-col space-y-1 p-2">
-                <p className="text-sm font-medium">{session.user.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{session.user.name}</p>
+                  <Badge variant="outline" className="text-xs">
+                    {ROLE_LABELS[session.user.role] ?? session.user.role}
+                  </Badge>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {session.user.email}
                 </p>

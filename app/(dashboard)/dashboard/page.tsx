@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation"
+import { Suspense } from "react"
 import { auth } from "@/auth"
 import { getCases } from "@/lib/queries/cases"
-import { Badge } from "@/components/ui/badge"
+import { getCaseTypesForRole } from "@/lib/constants"
 import {
   Card,
   CardDescription,
@@ -9,27 +10,27 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { NewCaseDialog } from "./new-case-dialog"
+import { CaseCard } from "./case-card"
+import { CaseFilters } from "./case-filters"
 
-const statusLabels: Record<string, string> = {
-  EN_COURS: "En cours",
-  TERMINE: "Terminé",
-  ARCHIVE: "Archivé",
-}
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "outline"
-> = {
-  EN_COURS: "default",
-  TERMINE: "secondary",
-  ARCHIVE: "outline",
-}
-
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
   const session = await auth()
   if (!session?.user?.id) redirect("/login")
 
-  const cases = await getCases(session.user.id)
+  const params = await searchParams
+  const cases = await getCases({
+    userId: session.user.id,
+    search: params.search,
+    status: params.status,
+    type: params.type,
+    sort: params.sort,
+  })
+
+  const caseTypes = getCaseTypesForRole(session.user.role)
 
   return (
     <div className="space-y-6">
@@ -37,46 +38,35 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">Mes Dossiers</h1>
           <p className="text-muted-foreground">
-            Gérez vos dossiers et structurez vos arguments
+            {cases.length} dossier{cases.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <NewCaseDialog />
+        <NewCaseDialog userRole={session.user.role} />
       </div>
+
+      <Suspense>
+        <CaseFilters caseTypes={caseTypes} />
+      </Suspense>
 
       {cases.length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center">
           <CardHeader>
             <CardTitle className="text-lg">Aucun dossier</CardTitle>
             <CardDescription>
-              Créez votre premier dossier pour commencer à structurer vos
-              arguments.
+              {params.search || params.status || params.type
+                ? "Aucun dossier ne correspond à vos filtres."
+                : "Créez votre premier dossier pour commencer à structurer vos arguments."}
             </CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cases.map((c) => (
-            <Card key={c.id} className="transition-shadow hover:shadow-md">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-base">{c.title}</CardTitle>
-                  <Badge variant={statusVariants[c.status] ?? "default"}>
-                    {statusLabels[c.status] ?? c.status}
-                  </Badge>
-                </div>
-                {c.description && (
-                  <CardDescription className="line-clamp-2">
-                    {c.description}
-                  </CardDescription>
-                )}
-                <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
-                  {c.type && <span>{c.type}</span>}
-                  <span>
-                    {new Date(c.updatedAt).toLocaleDateString("fr-FR")}
-                  </span>
-                </div>
-              </CardHeader>
-            </Card>
+            <CaseCard
+              key={c.id}
+              caseData={c}
+              userRole={session.user.role}
+            />
           ))}
         </div>
       )}

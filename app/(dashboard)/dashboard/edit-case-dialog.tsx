@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useActionState } from "react"
+import { useActionState } from "react"
 import { toast } from "sonner"
-import { createCase } from "@/lib/actions/cases"
-import { getCaseTypesForRole } from "@/lib/constants"
+import { updateCase } from "@/lib/actions/cases"
+import { getCaseTypesForRole, STATUS_LABELS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -12,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,16 +23,33 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function NewCaseDialog({ userRole }: { userRole: string }) {
-  const [open, setOpen] = useState(false)
+type CaseData = {
+  id: string
+  title: string
+  description: string | null
+  type: string | null
+  status: string
+}
+
+export function EditCaseDialog({
+  caseData,
+  userRole,
+  open,
+  onOpenChange,
+}: {
+  caseData: CaseData
+  userRole: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const caseTypes = getCaseTypesForRole(userRole)
 
   const [state, formAction, pending] = useActionState(
     async (prev: { error?: string } | undefined, formData: FormData) => {
-      const result = await createCase(prev, formData)
+      const result = await updateCase(caseData.id, prev, formData)
       if (result?.success) {
-        setOpen(false)
-        toast.success("Dossier créé avec succès")
+        onOpenChange(false)
+        toast.success("Dossier mis à jour")
       }
       return result
     },
@@ -41,15 +57,12 @@ export function NewCaseDialog({ userRole }: { userRole: string }) {
   )
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Nouveau Dossier</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Créer un dossier</DialogTitle>
+          <DialogTitle>Modifier le dossier</DialogTitle>
           <DialogDescription>
-            Ajoutez un nouveau dossier pour organiser vos arguments.
+            Modifiez les informations de votre dossier.
           </DialogDescription>
         </DialogHeader>
         <form action={formAction}>
@@ -60,25 +73,25 @@ export function NewCaseDialog({ userRole }: { userRole: string }) {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="title">Titre</Label>
+              <Label htmlFor="edit-title">Titre</Label>
               <Input
-                id="title"
+                id="edit-title"
                 name="title"
-                placeholder="Nom du dossier"
+                defaultValue={caseData.title}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="edit-description">Description</Label>
               <Input
-                id="description"
+                id="edit-description"
                 name="description"
-                placeholder="Description du dossier (optionnel)"
+                defaultValue={caseData.description ?? ""}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
-              <Select name="type">
+              <Label htmlFor="edit-type">Type</Label>
+              <Select name="type" defaultValue={caseData.type ?? undefined}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir un type" />
                 </SelectTrigger>
@@ -91,10 +104,32 @@ export function NewCaseDialog({ userRole }: { userRole: string }) {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-status">Statut</Label>
+              <Select name="status" defaultValue={caseData.status}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Annuler
+            </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Création..." : "Créer"}
+              {pending ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>

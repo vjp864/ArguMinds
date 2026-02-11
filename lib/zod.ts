@@ -21,3 +21,10 @@ export const caseSchema = z.object({
   description: z.string().optional(),
   type: z.string().optional(),
 })
+
+export const updateCaseSchema = z.object({
+  title: z.string().min(1, "Le titre est requis"),
+  description: z.string().optional(),
+  type: z.string().optional(),
+  status: z.enum(["EN_COURS", "TERMINE", "ARCHIVE"]),
+})
