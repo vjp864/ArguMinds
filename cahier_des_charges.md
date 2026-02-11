@@ -134,7 +134,7 @@
 ### 3.1 Architecture
 
 #### 3.1.1 Frontend
-- **Framework** : Next.js 14+ avec App Router
+- **Framework** : Next.js 16+ avec App Router
 - **UI** : Tailwind CSS + Shadcn/UI
 - **Visualisation** : React Flow pour les graphes
 - **Gestion d'état** : Zustand ou React Context (selon complexité)

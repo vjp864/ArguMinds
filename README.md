@@ -6,7 +6,7 @@
 
 ## 🚀 Stack Technique
 
-- **Framework** : Next.js 14+ (App Router)
+- **Framework** : Next.js 16+ (App Router)
 - **Authentification** : NextAuth.js
 - **Base de données** : PostgreSQL (Neon.tech)
 - **ORM** : Prisma
@@ -44,7 +44,7 @@
 
 ```bash
 git clone <votre-repo>
-cd argumenter
+cd arguminds
 ```
 
 ### 2. Variables d'Environnement
@@ -102,23 +102,44 @@ Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
 ## 🗺️ Roadmap de Développement
 
-### Phase 1 : Fondations
+### Phase 1 : Fondations (2-3 semaines)
 - [ ] Setup Next.js, Tailwind, Shadcn
-- [ ] Schéma Prisma (User, Case, Argument)
+- [ ] Configuration Prisma + Base de données Neon
 - [ ] Auth avec NextAuth (Email/Password)
+- [ ] Pages : Connexion, Inscription, Dashboard basique
+- [ ] Modèles : User, Case (CRUD de base)
 
-### Phase 2 : Gestion des Dossiers
-- [ ] Dashboard : Liste et création de "Cases"
-- [ ] Logique de rôles (Avocat vs Débatteur)
+### Phase 2 : Gestion des Dossiers (2 semaines)
+- [ ] CRUD complet des dossiers
+- [ ] Filtres, recherche, statuts
+- [ ] Interface utilisateur Dashboard
+- [ ] Gestion des rôles (Avocat/Débatteur)
 
-### Phase 3 : Le Graph Engine
+### Phase 3 : Graph Engine (4-5 semaines)
 - [ ] Intégration de React Flow
-- [ ] CRUD des arguments (nœuds) avec relations parents/enfants
-- [ ] Liaison des sources (URL/Texte) aux arguments
+- [ ] CRUD des arguments (création, édition, suppression)
+- [ ] Relations parent/enfant entre arguments
+- [ ] Visualisation du graphe (zoom, pan, layout automatique)
+- [ ] Sauvegarde des positions des nœuds
 
-### Phase 4 : Export & Finalisation
-- [ ] Exportation en PDF/Word
-- [ ] Nettoyage de l'UI et déploiement sur Vercel
+### Phase 4 : Sources Juridiques (2 semaines)
+- [ ] CRUD des sources
+- [ ] Liaison sources ↔ arguments
+- [ ] Bibliothèque centralisée
+- [ ] Recherche et filtres
+
+### Phase 5 : Export et Finalisation (2 semaines)
+- [ ] Export PDF avec graphe et détails
+- [ ] Export Word (.docx)
+- [ ] Tests end-to-end
+- [ ] Optimisation des performances
+- [ ] Déploiement sur Vercel
+
+### Phase 6 : Améliorations Futures (optionnel)
+- [ ] Collaboration en temps réel
+- [ ] Version mobile (Progressive Web App)
+- [ ] IA pour suggérer des contre-arguments
+- [ ] Analyse de la solidité des arguments
 
 ---
 
