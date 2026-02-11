@@ -35,3 +35,9 @@ export const argumentSchema = z.object({
   type: z.enum(["PRINCIPAL", "SUPPORT", "OBJECTION", "REFUTATION"]),
   parentId: z.string().optional(),
 })
+
+export const sourceSchema = z.object({
+  title: z.string().min(1, "Le titre est requis"),
+  url: z.string().url("URL invalide").optional().or(z.literal("")),
+  content: z.string().optional(),
+})

@@ -118,10 +118,19 @@
 }
 
 @layer base {
-  *:not(.react-flow *) {
+  * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.react-flow .react-flow__edge path,
+.react-flow .react-flow__connection-path {
+  stroke: var(--muted-foreground);
+}
+
+.react-flow .react-flow__handle {
+  border-color: var(--muted-foreground);
 }

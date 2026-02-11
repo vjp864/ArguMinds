@@ -27,6 +27,12 @@ import { EditArgumentDialog } from "./edit-argument-dialog"
 import { DeleteArgumentDialog } from "./delete-argument-dialog"
 import { ArgumentPanel } from "./argument-panel"
 
+type SourceItem = {
+  id: string
+  title: string
+  url: string | null
+}
+
 type ArgumentRecord = {
   id: string
   title: string
@@ -36,6 +42,7 @@ type ArgumentRecord = {
   parentId: string | null
   position: unknown
   createdAt: Date
+  sources: SourceItem[]
 }
 
 const nodeTypes = { argument: ArgumentNode }
@@ -74,28 +81,20 @@ function getLayoutedElements(
   return { nodes: layoutedNodes, edges }
 }
 
+function hasSavedPosition(position: unknown): position is { x: number; y: number } {
+  return (
+    position !== null &&
+    typeof position === "object" &&
+    "x" in (position as Record<string, unknown>) &&
+    "y" in (position as Record<string, unknown>)
+  )
+}
+
 function buildNodesAndEdges(
   args: ArgumentRecord[],
   onEdit: (id: string) => void,
   onDelete: (id: string) => void,
 ) {
-  const nodes: Node[] = args.map((arg) => {
-    const saved = arg.position as { x: number; y: number } | null
-    return {
-      id: arg.id,
-      type: "argument",
-      position: saved ?? { x: 0, y: 0 },
-      data: {
-        id: arg.id,
-        title: arg.title,
-        content: arg.content,
-        type: arg.type,
-        onEdit,
-        onDelete,
-      },
-    }
-  })
-
   const edges: Edge[] = args
     .filter((arg) => arg.parentId)
     .map((arg) => ({
@@ -105,15 +104,55 @@ function buildNodesAndEdges(
       animated: true,
     }))
 
-  const hasAnyPosition = args.some(
-    (a) =>
-      a.position &&
-      typeof a.position === "object" &&
-      (a.position as { x: number }).x !== 0,
-  )
-  if (!hasAnyPosition && nodes.length > 0) {
-    return getLayoutedElements(nodes, edges)
+  const hasAnyWithoutPosition = args.some((a) => !hasSavedPosition(a.position))
+  const allWithoutPosition = args.every((a) => !hasSavedPosition(a.position))
+
+  // If some nodes lack a position, run dagre to layout everything properly
+  if (hasAnyWithoutPosition && args.length > 0) {
+    const tempNodes: Node[] = args.map((arg) => ({
+      id: arg.id,
+      type: "argument",
+      position: { x: 0, y: 0 },
+      data: {
+        id: arg.id,
+        title: arg.title,
+        content: arg.content,
+        type: arg.type,
+        onEdit,
+        onDelete,
+      },
+    }))
+
+    const layouted = getLayoutedElements(tempNodes, edges)
+
+    // If not all are missing position, keep saved positions for nodes that have them
+    if (!allWithoutPosition) {
+      layouted.nodes = layouted.nodes.map((node) => {
+        const arg = args.find((a) => a.id === node.id)
+        if (arg && hasSavedPosition(arg.position)) {
+          return { ...node, position: arg.position }
+        }
+        return node
+      })
+    }
+
+    return layouted
   }
+
+  // All nodes have saved positions
+  const nodes: Node[] = args.map((arg) => ({
+    id: arg.id,
+    type: "argument",
+    position: (arg.position as { x: number; y: number }),
+    data: {
+      id: arg.id,
+      title: arg.title,
+      content: arg.content,
+      type: arg.type,
+      onEdit,
+      onDelete,
+    },
+  }))
 
   return { nodes, edges }
 }
@@ -121,9 +160,11 @@ function buildNodesAndEdges(
 function ArgumentGraphInner({
   arguments: initialArgs,
   caseId,
+  allSources,
 }: {
   arguments: ArgumentRecord[]
   caseId: string
+  allSources: SourceItem[]
 }) {
   const [addOpen, setAddOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -257,6 +298,8 @@ function ArgumentGraphInner({
           />
           <ArgumentPanel
             argument={selectedArg}
+            caseId={caseId}
+            allSources={allSources}
             open={panelOpen}
             onOpenChange={setPanelOpen}
             onEdit={handleEdit}
@@ -271,6 +314,7 @@ function ArgumentGraphInner({
 export function ArgumentGraph(props: {
   arguments: ArgumentRecord[]
   caseId: string
+  allSources: SourceItem[]
 }) {
   return (
     <ReactFlowProvider>

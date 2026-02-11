@@ -10,6 +10,9 @@ export async function getArgumentsForCase(caseId: string, userId: string) {
 
   return prisma.argument.findMany({
     where: { caseId },
+    include: {
+      sources: { select: { id: true, title: true, url: true } },
+    },
     orderBy: { createdAt: "asc" },
   })
 }

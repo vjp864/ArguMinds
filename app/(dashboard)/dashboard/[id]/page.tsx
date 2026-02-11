@@ -4,12 +4,13 @@ import { ArrowLeft } from "lucide-react"
 import { auth } from "@/auth"
 import { getCase } from "@/lib/queries/cases"
 import { getArgumentsForCase } from "@/lib/queries/arguments"
+import { getSourcesForCase } from "@/lib/queries/sources"
 import { STATUS_LABELS } from "@/lib/constants"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ArgumentGraph } from "@/components/graph/argument-graph"
+import { SourceList } from "@/components/sources/source-list"
 import { CaseActions } from "./case-actions"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline"> = {
@@ -31,6 +32,7 @@ export default async function CaseDetailPage({
   if (!caseData) notFound()
 
   const args = await getArgumentsForCase(id, session.user.id)
+  const sources = await getSourcesForCase(id, session.user.id)
 
   return (
     <div className="space-y-6">
@@ -77,20 +79,15 @@ export default async function CaseDetailPage({
 
       <Separator />
 
-      <ArgumentGraph arguments={args} caseId={id} />
+      <ArgumentGraph
+        arguments={args}
+        caseId={id}
+        allSources={sources.map((s) => ({ id: s.id, title: s.title, url: s.url }))}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Sources</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {caseData.sources.length === 0
-              ? "La gestion des sources sera disponible dans la Phase 4."
-              : `${caseData.sources.length} source(s)`}
-          </p>
-        </CardContent>
-      </Card>
+      <Separator />
+
+      <SourceList sources={sources} caseId={id} />
     </div>
   )
 }
