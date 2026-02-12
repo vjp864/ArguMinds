@@ -3,10 +3,7 @@
 import { useState } from "react"
 import { FileText, FileDown, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { saveAs } from "file-saver"
-import html2canvas from "html2canvas"
 import { Button } from "@/components/ui/button"
-import { generatePDF } from "@/lib/export/generate-pdf"
 import type { ArgumentForExport } from "@/lib/export/format-arguments"
 
 type CaseDataForExport = {
@@ -20,6 +17,13 @@ type SourceForExport = {
   title: string
   url: string | null
   content: string | null
+}
+
+function sanitizeFilename(title: string): string {
+  return title
+    .replace(/[^a-zA-Z0-9àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ ]/g, "")
+    .replace(/\s+/g, "_")
+    .slice(0, 50)
 }
 
 export function ExportButtons({
@@ -39,6 +43,14 @@ export function ExportButtons({
   const handleExportPDF = async () => {
     setPdfLoading(true)
     try {
+      // Dynamic imports — these heavy libs are only loaded on click
+      const [{ generatePDF }, { default: html2canvas }, { saveAs }] =
+        await Promise.all([
+          import("@/lib/export/generate-pdf"),
+          import("html2canvas"),
+          import("file-saver"),
+        ])
+
       // Try to capture the React Flow graph (may fail on complex SVG)
       let graphCanvas: HTMLCanvasElement | null = null
       const graphEl = document.querySelector(".react-flow") as HTMLElement | null
@@ -53,14 +65,12 @@ export function ExportButtons({
             foreignObjectRendering: false,
           })
         } catch {
-          // Graph capture failed — PDF will be generated without graph image
           console.warn("Graph capture failed, generating PDF without graph image")
         }
       }
 
       const blob = await generatePDF(caseData, args, sources, graphCanvas)
-      const filename = `ARGUMINDS_${caseData.title.replace(/[^a-zA-Z0-9àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ ]/g, "").replace(/\s+/g, "_").slice(0, 50)}.pdf`
-      saveAs(blob, filename)
+      saveAs(blob, `ARGUMINDS_${sanitizeFilename(caseData.title)}.pdf`)
       toast.success("PDF exporté avec succès")
     } catch (err) {
       console.error("PDF export error:", err)
@@ -74,12 +84,11 @@ export function ExportButtons({
     setDocxLoading(true)
     try {
       const response = await fetch(`/api/export/docx/${caseId}`)
-      if (!response.ok) {
-        throw new Error("Erreur serveur")
-      }
+      if (!response.ok) throw new Error("Erreur serveur")
+
       const blob = await response.blob()
-      const filename = `ARGUMINDS_${caseData.title.replace(/[^a-zA-Z0-9àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ ]/g, "").replace(/\s+/g, "_").slice(0, 50)}.docx`
-      saveAs(blob, filename)
+      const { saveAs } = await import("file-saver")
+      saveAs(blob, `ARGUMINDS_${sanitizeFilename(caseData.title)}.docx`)
       toast.success("Document Word exporté avec succès")
     } catch {
       toast.error("Erreur lors de l'export Word")
