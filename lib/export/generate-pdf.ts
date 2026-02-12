@@ -6,6 +6,16 @@ import {
   type ArgumentTreeNode,
 } from "./format-arguments"
 
+// Replace problematic Unicode characters that jsPDF built-in fonts can't handle
+function sanitize(text: string): string {
+  return text
+    .replace(/\u2026/g, "...")  // ellipsis
+    .replace(/\u2018|\u2019/g, "'")  // smart quotes
+    .replace(/\u201C|\u201D/g, '"')  // smart double quotes
+    .replace(/\u2014/g, " - ")  // em dash
+    .replace(/\u2013/g, "-")  // en dash
+}
+
 type CaseDataForPDF = {
   title: string
   description: string | null
@@ -72,7 +82,7 @@ function renderArgumentNode(
   doc.setFontSize(10)
   doc.setFont("helvetica", "bold")
   doc.setTextColor(50)
-  const header = `${counter} [${getTypeLabel(node.type)}] ${node.title}`
+  const header = sanitize(`${counter} [${getTypeLabel(node.type)}] ${node.title}`)
   const headerLines = doc.splitTextToSize(header, availWidth)
   doc.text(headerLines, indent, y)
   y += headerLines.length * LINE_HEIGHT
@@ -83,7 +93,7 @@ function renderArgumentNode(
     doc.setFontSize(9)
     doc.setFont("helvetica", "normal")
     doc.setTextColor(80)
-    const contentLines = doc.splitTextToSize(node.content, availWidth - 4)
+    const contentLines = doc.splitTextToSize(sanitize(node.content), availWidth - 4)
     doc.text(contentLines, indent + 4, y)
     y += contentLines.length * 5
   }
@@ -94,7 +104,7 @@ function renderArgumentNode(
     doc.setFontSize(8)
     doc.setTextColor(100)
     const sourceNames = node.sources.map((s) => s.title).join(", ")
-    const srcText = `Sources : ${sourceNames}`
+    const srcText = sanitize(`Sources : ${sourceNames}`)
     const srcLines = doc.splitTextToSize(srcText, availWidth - 4)
     doc.text(srcLines, indent + 4, y)
     y += srcLines.length * 4 + 2
@@ -135,7 +145,7 @@ export async function generatePDF(
 
   doc.setFontSize(14)
   doc.setTextColor(30)
-  const titleLines = doc.splitTextToSize(caseData.title, CONTENT_WIDTH)
+  const titleLines = doc.splitTextToSize(sanitize(caseData.title), CONTENT_WIDTH)
   doc.text(titleLines, MARGIN, y)
   y += titleLines.length * 7
 
@@ -173,7 +183,7 @@ export async function generatePDF(
   y += 6
 
   if (caseData.description) {
-    const descLines = doc.splitTextToSize(caseData.description, CONTENT_WIDTH)
+    const descLines = doc.splitTextToSize(sanitize(caseData.description), CONTENT_WIDTH)
     doc.text(descLines, MARGIN, y)
     y += descLines.length * 5 + 4
   }
@@ -217,7 +227,7 @@ export async function generatePDF(
 
   if (args.length === 0) {
     doc.setFontSize(9)
-    doc.setFont("helvetica", "italic")
+    doc.setFont("helvetica", "normal")
     doc.setTextColor(120)
     doc.text("Aucun argument.", MARGIN, y)
     y += 8
@@ -243,7 +253,7 @@ export async function generatePDF(
 
   if (sources.length === 0) {
     doc.setFontSize(9)
-    doc.setFont("helvetica", "italic")
+    doc.setFont("helvetica", "normal")
     doc.setTextColor(120)
     doc.text("Aucune source.", MARGIN, y)
   } else {
@@ -253,25 +263,25 @@ export async function generatePDF(
       doc.setFontSize(9)
       doc.setFont("helvetica", "bold")
       doc.setTextColor(50)
-      doc.text(`• ${source.title}`, MARGIN + 2, y)
+      doc.text(sanitize(`• ${source.title}`), MARGIN + 2, y)
       y += 5
 
       if (source.url) {
         doc.setFont("helvetica", "normal")
         doc.setTextColor(55, 48, 163)
-        const urlLines = doc.splitTextToSize(source.url, CONTENT_WIDTH - 6)
+        const urlLines = doc.splitTextToSize(sanitize(source.url), CONTENT_WIDTH - 6)
         doc.text(urlLines, MARGIN + 6, y)
         y += urlLines.length * 4 + 1
       }
 
       if (source.content) {
-        doc.setFont("helvetica", "italic")
+        doc.setFont("helvetica", "normal")
         doc.setTextColor(100)
         const excerpt =
           source.content.length > 200
-            ? source.content.slice(0, 200) + "…"
+            ? source.content.slice(0, 200) + "..."
             : source.content
-        const excerptLines = doc.splitTextToSize(`"${excerpt}"`, CONTENT_WIDTH - 6)
+        const excerptLines = doc.splitTextToSize(sanitize(`"${excerpt}"`), CONTENT_WIDTH - 6)
         doc.text(excerptLines, MARGIN + 6, y)
         y += excerptLines.length * 4 + 2
       }
