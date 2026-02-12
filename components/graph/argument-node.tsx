@@ -2,7 +2,7 @@
 
 import { memo } from "react"
 import { Handle, Position, type NodeProps } from "@xyflow/react"
-import { Pencil, Trash2 } from "lucide-react"
+import { Pencil, Sparkles, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export type ArgumentNodeData = {
@@ -12,6 +12,7 @@ export type ArgumentNodeData = {
   type: string
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  onAiAnalyze: (id: string) => void
 }
 
 const TYPE_STYLES: Record<string, { bg: string; border: string; badge: string }> = {
@@ -62,6 +63,16 @@ function ArgumentNodeComponent({ data }: NodeProps) {
           <p className="truncate text-sm font-semibold">{nodeData.title}</p>
         </div>
         <div className="nodrag nopan flex gap-1">
+          <button
+            className="rounded p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            onClick={(e) => {
+              e.stopPropagation()
+              nodeData.onAiAnalyze(nodeData.id)
+            }}
+            title="Analyser avec l'IA"
+          >
+            <Sparkles className="h-3 w-3" />
+          </button>
           <button
             className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={(e) => {

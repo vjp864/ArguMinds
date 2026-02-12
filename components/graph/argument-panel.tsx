@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ExternalLink, Link2, Pencil, Trash2, X } from "lucide-react"
+import { ExternalLink, Link2, Pencil, Sparkles, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { unlinkSourceFromArgument } from "@/lib/actions/sources"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { AiAnalysisPanel } from "./ai-analysis-panel"
 import { LinkSourceDialog } from "./link-source-dialog"
 
 type SourceItem = {
@@ -165,6 +166,22 @@ export function ArgumentPanel({
                     ))}
                   </div>
                 )}
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Intelligence Artificielle
+                </h3>
+                <AiAnalysisPanel
+                  argumentId={argument.id}
+                  caseId={caseId}
+                  argumentTitle={argument.title}
+                  argumentType={argument.type}
+                  argumentParentId={argument.parentId}
+                />
               </div>
 
               <Separator />

@@ -94,6 +94,7 @@ function buildNodesAndEdges(
   args: ArgumentRecord[],
   onEdit: (id: string) => void,
   onDelete: (id: string) => void,
+  onAiAnalyze: (id: string) => void,
 ) {
   const edges: Edge[] = args
     .filter((arg) => arg.parentId)
@@ -120,6 +121,7 @@ function buildNodesAndEdges(
         type: arg.type,
         onEdit,
         onDelete,
+        onAiAnalyze,
       },
     }))
 
@@ -184,9 +186,14 @@ function ArgumentGraphInner({
     setDeleteOpen(true)
   }, [])
 
+  const handleAiAnalyze = useCallback((id: string) => {
+    setSelectedArgId(id)
+    setPanelOpen(true)
+  }, [])
+
   const { nodes: builtNodes, edges: builtEdges } = useMemo(
-    () => buildNodesAndEdges(initialArgs, handleEdit, handleDelete),
-    [initialArgs, handleEdit, handleDelete],
+    () => buildNodesAndEdges(initialArgs, handleEdit, handleDelete, handleAiAnalyze),
+    [initialArgs, handleEdit, handleDelete, handleAiAnalyze],
   )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(builtNodes)
