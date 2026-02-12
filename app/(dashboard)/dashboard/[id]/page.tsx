@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ArgumentGraph } from "@/components/graph/argument-graph"
 import { SourceList } from "@/components/sources/source-list"
+import { ExportButtons } from "@/components/export/export-buttons"
 import { CaseActions } from "./case-actions"
 
 const statusVariants: Record<string, "default" | "secondary" | "outline"> = {
@@ -55,6 +56,28 @@ export default async function CaseDetailPage({
             </p>
           )}
         </div>
+        <ExportButtons
+          caseData={{
+            title: caseData.title,
+            description: caseData.description,
+            type: caseData.type,
+            status: caseData.status,
+          }}
+          arguments={args.map((a) => ({
+            id: a.id,
+            title: a.title,
+            content: a.content,
+            type: a.type,
+            parentId: a.parentId,
+            sources: a.sources,
+          }))}
+          sources={sources.map((s) => ({
+            title: s.title,
+            url: s.url,
+            content: s.content,
+          }))}
+          caseId={id}
+        />
         <CaseActions
           caseData={{
             id: caseData.id,
