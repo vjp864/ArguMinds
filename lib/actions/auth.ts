@@ -44,8 +44,7 @@ export async function register(
   } catch (error) {
     console.error("Registration error:", error);
     return {
-      error:
-        "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 
