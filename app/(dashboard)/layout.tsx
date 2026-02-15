@@ -64,6 +64,12 @@ export default async function DashboardLayout({
                 </p>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href="/profile" className="w-full">
+                  Mon Profil
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <form action={logout}>
                   <button type="submit" className="w-full text-left">

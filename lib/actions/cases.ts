@@ -74,8 +74,16 @@ export async function deleteCase(id: string) {
     return { error: "Non authentifié" }
   }
 
-  await prisma.case.delete({
+  const existing = await prisma.case.findUnique({
     where: { id, userId: session.user.id },
+  })
+
+  if (!existing) {
+    return { error: "Dossier introuvable" }
+  }
+
+  await prisma.case.delete({
+    where: { id },
   })
 
   revalidatePath("/dashboard")

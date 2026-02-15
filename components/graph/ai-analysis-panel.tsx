@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   Sparkles,
   Lightbulb,
@@ -9,11 +9,17 @@ import {
   Check,
   AlertTriangle,
   ThumbsUp,
+  History,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { updateArgument } from "@/lib/actions/arguments"
+import { deleteAiAnalysis } from "@/lib/actions/ai-analyses"
 
 type AnalysisResult = {
   weight: number
@@ -28,6 +34,26 @@ type SuggestResult = {
 
 type ReformulateResult = {
   reformulated: string
+}
+
+type HistoryEntry = {
+  id: string
+  argumentId: string
+  action: string
+  result: AnalysisResult | SuggestResult | ReformulateResult
+  createdAt: string
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  analyze: "Analyse",
+  suggest: "Suggestions",
+  reformulate: "Reformulation",
+}
+
+const ACTION_COLORS: Record<string, string> = {
+  analyze: "bg-primary/10 text-primary",
+  suggest: "bg-yellow-500/10 text-yellow-600",
+  reformulate: "bg-accent/10 text-accent",
 }
 
 async function callAi(
@@ -73,6 +99,40 @@ function WeightBar({ weight }: { weight: number }) {
   )
 }
 
+function ScoreEvolution({ entries }: { entries: HistoryEntry[] }) {
+  const analyzeEntries = entries
+    .filter((e) => e.action === "analyze")
+    .reverse() // oldest first
+  if (analyzeEntries.length < 2) return null
+
+  const first = (analyzeEntries[0].result as AnalysisResult).weight
+  const last = (analyzeEntries[analyzeEntries.length - 1].result as AnalysisResult).weight
+  const trend = last - first
+
+  return (
+    <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2">
+      <span className="text-xs font-medium text-muted-foreground">
+        Evolution du score :
+      </span>
+      <div className="flex items-center gap-1">
+        {analyzeEntries.map((e, i) => (
+          <span key={e.id} className="text-xs font-mono">
+            {(e.result as AnalysisResult).weight}
+            {i < analyzeEntries.length - 1 && (
+              <span className="text-muted-foreground"> → </span>
+            )}
+          </span>
+        ))}
+      </div>
+      {trend > 0 ? (
+        <TrendingUp className="h-3.5 w-3.5 text-accent" />
+      ) : trend < 0 ? (
+        <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+      ) : null}
+    </div>
+  )
+}
+
 export function AiAnalysisPanel({
   argumentId,
   caseId,
@@ -92,12 +152,37 @@ export function AiAnalysisPanel({
     null,
   )
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch(
+        `/api/ai/history/${argumentId}?caseId=${caseId}`,
+      )
+      const json = await res.json()
+      if (json.success) {
+        setHistory(json.data)
+      }
+    } catch {
+      // Silently fail — history is not critical
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [argumentId, caseId])
+
+  useEffect(() => {
+    fetchHistory()
+  }, [fetchHistory])
 
   const handleAnalyze = async () => {
     setLoadingAction("analyze")
     try {
       const data = await callAi(argumentId, caseId, "analyze")
       setAnalysis(data)
+      fetchHistory()
     } catch {
       toast.error("Erreur lors de l'analyse")
     } finally {
@@ -110,6 +195,7 @@ export function AiAnalysisPanel({
     try {
       const data = await callAi(argumentId, caseId, "suggest")
       setSuggestions(data)
+      fetchHistory()
     } catch {
       toast.error("Erreur lors des suggestions")
     } finally {
@@ -122,6 +208,7 @@ export function AiAnalysisPanel({
     try {
       const data = await callAi(argumentId, caseId, "reformulate")
       setReformulation(data)
+      fetchHistory()
     } catch {
       toast.error("Erreur lors de la reformulation")
     } finally {
@@ -149,6 +236,16 @@ export function AiAnalysisPanel({
       toast.error("Erreur lors de l'application")
     } finally {
       setLoadingAction(null)
+    }
+  }
+
+  const handleDeleteAnalysis = async (id: string) => {
+    const result = await deleteAiAnalysis(id, caseId)
+    if (result?.success) {
+      setHistory((prev) => prev.filter((h) => h.id !== id))
+      toast.success("Analyse supprimée")
+    } else {
+      toast.error(result?.error ?? "Erreur")
     }
   }
 
@@ -202,101 +299,226 @@ export function AiAnalysisPanel({
         </Button>
       </div>
 
-      {/* Analysis results */}
-      {analysis && (
-        <div className="space-y-3 rounded-md border bg-muted/30 p-3">
-          <WeightBar weight={analysis.weight} />
+      {/* Tab toggle */}
+      <div className="flex gap-1 rounded-md border bg-muted/50 p-1">
+        <button
+          className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+            !showHistory
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setShowHistory(false)}
+        >
+          Résultats
+        </button>
+        <button
+          className={`flex flex-1 items-center justify-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+            showHistory
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setShowHistory(true)}
+        >
+          <History className="h-3 w-3" />
+          Historique
+          {history.length > 0 && (
+            <span className="rounded-full bg-primary/10 px-1.5 text-[10px] text-primary">
+              {history.length}
+            </span>
+          )}
+        </button>
+      </div>
 
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {analysis.reasoning}
-          </p>
+      {/* Results tab */}
+      {!showHistory && (
+        <>
+          {/* Analysis results */}
+          {analysis && (
+            <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+              <WeightBar weight={analysis.weight} />
 
-          {analysis.strengths.length > 0 && (
-            <div>
-              <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-accent">
-                <ThumbsUp className="h-3 w-3" />
-                Points forts
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {analysis.reasoning}
               </p>
-              <ul className="space-y-0.5">
-                {analysis.strengths.map((s, i) => (
+
+              {analysis.strengths.length > 0 && (
+                <div>
+                  <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-accent">
+                    <ThumbsUp className="h-3 w-3" />
+                    Points forts
+                  </p>
+                  <ul className="space-y-0.5">
+                    {analysis.strengths.map((s, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                      >
+                        <Check className="mt-0.5 h-3 w-3 shrink-0 text-accent" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.weaknesses.length > 0 && (
+                <div>
+                  <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-destructive">
+                    <AlertTriangle className="h-3 w-3" />
+                    Faiblesses
+                  </p>
+                  <ul className="space-y-0.5">
+                    {analysis.weaknesses.map((w, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                      >
+                        <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-destructive/60" />
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Suggestions results */}
+          {suggestions && (
+            <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+              <p className="flex items-center gap-1 text-xs font-semibold text-primary">
+                <Lightbulb className="h-3 w-3" />
+                Suggestions d&apos;amélioration
+              </p>
+              <ol className="list-inside list-decimal space-y-2">
+                {suggestions.suggestions.map((s, i) => (
                   <li
                     key={i}
-                    className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                    className="text-xs leading-relaxed text-muted-foreground"
                   >
-                    <Check className="mt-0.5 h-3 w-3 shrink-0 text-accent" />
                     {s}
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           )}
 
-          {analysis.weaknesses.length > 0 && (
-            <div>
-              <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-destructive">
-                <AlertTriangle className="h-3 w-3" />
-                Faiblesses
+          {/* Reformulation results */}
+          {reformulation && (
+            <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+              <p className="flex items-center gap-1 text-xs font-semibold text-primary">
+                <RefreshCw className="h-3 w-3" />
+                Reformulation proposée
               </p>
-              <ul className="space-y-0.5">
-                {analysis.weaknesses.map((w, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-1.5 text-xs text-muted-foreground"
-                  >
-                    <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-destructive/60" />
-                    {w}
-                  </li>
-                ))}
-              </ul>
+              <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                {reformulation.reformulated}
+              </p>
+              <Separator />
+              <Button
+                size="sm"
+                className="h-7 w-full text-xs"
+                onClick={handleApplyReformulation}
+                disabled={loadingAction === "apply"}
+              >
+                {loadingAction === "apply" ? (
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                ) : (
+                  <Check className="mr-1.5 h-3 w-3" />
+                )}
+                Appliquer cette reformulation
+              </Button>
             </div>
           )}
-        </div>
+
+          {!analysis && !suggestions && !reformulation && (
+            <p className="text-center text-xs text-muted-foreground">
+              Cliquez sur un bouton ci-dessus pour lancer une analyse IA.
+            </p>
+          )}
+        </>
       )}
 
-      {/* Suggestions results */}
-      {suggestions && (
-        <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-          <p className="flex items-center gap-1 text-xs font-semibold text-primary">
-            <Lightbulb className="h-3 w-3" />
-            Suggestions d&apos;amélioration
-          </p>
-          <ol className="list-inside list-decimal space-y-2">
-            {suggestions.suggestions.map((s, i) => (
-              <li
-                key={i}
-                className="text-xs leading-relaxed text-muted-foreground"
-              >
-                {s}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
+      {/* History tab */}
+      {showHistory && (
+        <div className="space-y-3">
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : history.length === 0 ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Aucun historique d&apos;analyse.
+            </p>
+          ) : (
+            <>
+              <ScoreEvolution entries={history} />
 
-      {/* Reformulation results */}
-      {reformulation && (
-        <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-          <p className="flex items-center gap-1 text-xs font-semibold text-primary">
-            <RefreshCw className="h-3 w-3" />
-            Reformulation proposée
-          </p>
-          <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-            {reformulation.reformulated}
-          </p>
-          <Separator />
-          <Button
-            size="sm"
-            className="h-7 w-full text-xs"
-            onClick={handleApplyReformulation}
-            disabled={loadingAction === "apply"}
-          >
-            {loadingAction === "apply" ? (
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-            ) : (
-              <Check className="mr-1.5 h-3 w-3" />
-            )}
-            Appliquer cette reformulation
-          </Button>
+              {history.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="space-y-2 rounded-md border bg-muted/30 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <Badge
+                      className={`text-[10px] ${ACTION_COLORS[entry.action] ?? ""}`}
+                    >
+                      {ACTION_LABELS[entry.action] ?? entry.action}
+                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(entry.createdAt).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <button
+                        className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteAnalysis(entry.id)}
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Render based on action type */}
+                  {entry.action === "analyze" && (
+                    <div className="space-y-1">
+                      <WeightBar
+                        weight={(entry.result as AnalysisResult).weight}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {(entry.result as AnalysisResult).reasoning}
+                      </p>
+                    </div>
+                  )}
+
+                  {entry.action === "suggest" && (
+                    <ol className="list-inside list-decimal space-y-1">
+                      {(entry.result as SuggestResult).suggestions.map(
+                        (s, i) => (
+                          <li
+                            key={i}
+                            className="text-xs text-muted-foreground"
+                          >
+                            {s}
+                          </li>
+                        ),
+                      )}
+                    </ol>
+                  )}
+
+                  {entry.action === "reformulate" && (
+                    <p className="whitespace-pre-wrap text-xs text-muted-foreground">
+                      {(entry.result as ReformulateResult).reformulated}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>

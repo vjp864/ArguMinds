@@ -61,6 +61,9 @@ function ArgumentNodeComponent({ data }: NodeProps) {
             {TYPE_LABELS[nodeData.type] ?? nodeData.type}
           </Badge>
           <p className="truncate text-sm font-semibold">{nodeData.title}</p>
+          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+            {nodeData.content}
+          </p>
         </div>
         <div className="nodrag nopan flex gap-1">
           <button

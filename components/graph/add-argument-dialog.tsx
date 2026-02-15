@@ -50,7 +50,7 @@ export function AddArgumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Ajouter un argument</DialogTitle>
           <DialogDescription>
@@ -79,7 +79,8 @@ export function AddArgumentDialog({
                 id="content"
                 name="content"
                 placeholder="Développez votre argument..."
-                rows={4}
+                rows={8}
+                className="min-h-[120px] max-h-[300px] overflow-y-auto"
                 required
               />
             </div>

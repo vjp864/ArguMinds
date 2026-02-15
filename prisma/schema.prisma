@@ -75,18 +75,28 @@ model Case {
 }
 
 model Argument {
-  id        String     @id @default(cuid())
-  title     String
-  content   String
-  type      ArgType    @default(SUPPORT)
-  caseId    String
-  case      Case       @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Argument?  @relation("ArgumentHierarchy", fields: [parentId], references: [id])
-  children  Argument[] @relation("ArgumentHierarchy")
-  sources   Source[]
-  position  Json?
-  createdAt DateTime   @default(now())
+  id          String       @id @default(cuid())
+  title       String
+  content     String
+  type        ArgType      @default(SUPPORT)
+  caseId      String
+  case        Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Argument?    @relation("ArgumentHierarchy", fields: [parentId], references: [id])
+  children    Argument[]   @relation("ArgumentHierarchy")
+  sources     Source[]
+  aiAnalyses  AiAnalysis[]
+  position    Json?
+  createdAt   DateTime     @default(now())
+}
+
+model AiAnalysis {
+  id         String   @id @default(cuid())
+  argumentId String
+  argument   Argument @relation(fields: [argumentId], references: [id], onDelete: Cascade)
+  action     String
+  result     Json
+  createdAt  DateTime @default(now())
 }
 
 model Source {

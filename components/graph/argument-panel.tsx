@@ -83,7 +83,7 @@ export function ArgumentPanel({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="flex flex-col overflow-hidden">
+        <SheetContent className="flex flex-col overflow-hidden sm:max-w-lg">
           <SheetHeader className="border-b px-6 pb-4 pt-6">
             <div className="flex items-start gap-3 pr-6">
               <div className="min-w-0 flex-1">
@@ -105,7 +105,7 @@ export function ArgumentPanel({
                 <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Contenu
                 </h3>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                <p className="whitespace-pre-wrap text-justify text-sm leading-relaxed">
                   {argument.content}
                 </p>
               </div>

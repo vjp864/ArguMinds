@@ -43,33 +43,12 @@ export function ExportButtons({
   const handleExportPDF = async () => {
     setPdfLoading(true)
     try {
-      // Dynamic imports — these heavy libs are only loaded on click
-      const [{ generatePDF }, { default: html2canvas }, { saveAs }] =
-        await Promise.all([
-          import("@/lib/export/generate-pdf"),
-          import("html2canvas"),
-          import("file-saver"),
-        ])
+      const [{ generatePDF }, { saveAs }] = await Promise.all([
+        import("@/lib/export/generate-pdf"),
+        import("file-saver"),
+      ])
 
-      // Try to capture the React Flow graph (may fail on complex SVG)
-      let graphCanvas: HTMLCanvasElement | null = null
-      const graphEl = document.querySelector(".react-flow") as HTMLElement | null
-      if (graphEl) {
-        try {
-          graphCanvas = await html2canvas(graphEl, {
-            backgroundColor: "#ffffff",
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            allowTaint: true,
-            foreignObjectRendering: false,
-          })
-        } catch {
-          console.warn("Graph capture failed, generating PDF without graph image")
-        }
-      }
-
-      const blob = await generatePDF(caseData, args, sources, graphCanvas)
+      const blob = await generatePDF(caseData, args, sources, null)
       saveAs(blob, `ARGUMINDS_${sanitizeFilename(caseData.title)}.pdf`)
       toast.success("PDF exporté avec succès")
     } catch (err) {

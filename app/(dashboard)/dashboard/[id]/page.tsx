@@ -51,7 +51,7 @@ export default async function CaseDetailPage({
             </Badge>
           </div>
           {caseData.description && (
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
               {caseData.description}
             </p>
           )}

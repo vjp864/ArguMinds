@@ -49,10 +49,10 @@ export default async function DashboardPage({
       </Suspense>
 
       {cases.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center">
-          <CardHeader>
+        <Card className="p-12">
+          <CardHeader className="text-center justify-items-center">
             <CardTitle className="text-lg">Aucun dossier</CardTitle>
-            <CardDescription>
+            <CardDescription className="max-w-md text-center">
               {params.search || params.status || params.type
                 ? "Aucun dossier ne correspond à vos filtres."
                 : "Créez votre premier dossier pour commencer à structurer vos arguments."}

@@ -158,6 +158,16 @@ export async function POST(request: Request) {
     }
 
     const parsed = JSON.parse(jsonMatch[0])
+
+    // Persist the analysis result
+    await prisma.aiAnalysis.create({
+      data: {
+        argumentId,
+        action,
+        result: parsed,
+      },
+    })
+
     return NextResponse.json({ success: true, data: parsed })
   } catch (err) {
     console.error("Groq API error:", err)
