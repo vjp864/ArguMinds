@@ -33,8 +33,12 @@
 
 #### 2.1.2 Profils Utilisateurs
 - [x] Champs : Nom, Email, Role (Avocat / Debatteur)
+- [x] Page de profil dediee (`/profile`) avec avatar, infos, statistiques
+- [x] Modification du nom et de l'email avec validation Zod
+- [x] Changement de mot de passe securise (verification de l'ancien avec bcrypt)
+- [x] Suppression de compte avec confirmation (AlertDialog) et cascade des donnees
+- [x] Lien "Mon Profil" dans le menu dropdown de l'avatar
 - [ ] Photo de profil (optionnel)
-- [ ] Parametres de compte (optionnel)
 
 #### 2.1.3 Gestion des Roles
 - [x] **Avocat** : Acces aux fonctionnalites juridiques
@@ -77,6 +81,15 @@
 - [x] **Supprimer** : Avec confirmation dialog
 - [x] **Reorganiser** : Drag & drop pour repositionner les noeuds
 - [x] Sauvegarde automatique des positions (JSON en base)
+- [x] **Editeur de texte riche** (TipTap/ProseMirror) pour le contenu des arguments :
+  - Gras, Italique, Souligne, Surligne
+  - Titres (H2, H3)
+  - Listes a puces et numerotees
+  - Citations (blockquote)
+  - Indentation (augmenter/reduire)
+  - Alignement (gauche, centre, droite, justifie)
+  - Annuler/Retablir (undo/redo)
+- [x] Affichage du contenu formate dans le panneau lateral et les noeuds du graphe
 
 #### 2.3.3 Relations entre Arguments
 - [x] Definition de relations parent/enfant a la creation
@@ -179,8 +192,9 @@
 
 #### 3.1.1 Frontend
 - **Framework** : Next.js 16.1.6 (App Router, Turbopack)
-- **UI** : Tailwind CSS 4 + Shadcn/UI (style New York)
+- **UI** : Tailwind CSS 4 + Shadcn/UI (style New York) + @tailwindcss/typography
 - **Visualisation** : React Flow (@xyflow/react v12.10) + dagre
+- **Editeur riche** : TipTap 3 (@tiptap/react, starter-kit, extensions underline/highlight/text-align/placeholder)
 - **Theming** : next-themes (clair/sombre)
 - **Notifications** : Sonner (toasts)
 - **Icones** : lucide-react
@@ -300,13 +314,15 @@
 1. **Landing page** : Hero, 3 fonctionnalites, 3 etapes, CTA, footer
 2. **Connexion / Inscription** : Formulaires centres, branding sobre
 3. **Dashboard** : Grille de cartes dossiers, filtres, recherche, boutons export
-4. **Detail dossier** : Canvas React Flow, panneau lateral, sources, IA
+4. **Detail dossier** : Canvas React Flow, panneau lateral, sources, IA, editeur riche
+5. **Profil** : Avatar, informations personnelles, securite, zone dangereuse
 
 ### 4.3 Composants UI (Shadcn/UI)
 - Button, Input, Textarea, Select, Label
-- Dialog, Sheet (panneau lateral), Separator
-- Badge, Card, Skeleton
+- Dialog, Sheet (panneau lateral), AlertDialog, Separator
+- Badge, Card, Avatar, Skeleton
 - Toasts (Sonner)
+- RichTextEditor (TipTap), RichTextDisplay (rendu HTML prose)
 
 ---
 
@@ -368,6 +384,24 @@
 - [x] Bouton IA sur chaque noeud du graphe
 - [x] Section IA dans le panneau lateral
 
+### Phase 7 : Profil Utilisateur — TERMINE
+- [x] Page de profil (`/profile`) avec avatar, infos, statistiques
+- [x] Modification du nom et de l'email
+- [x] Changement de mot de passe securise
+- [x] Suppression de compte avec cascade des donnees
+- [x] Server actions dediees (`lib/actions/profile.ts`)
+- [x] Schemas de validation Zod (`updateProfileSchema`, `changePasswordSchema`)
+
+### Phase 8 : Editeur de Texte Riche — TERMINE
+- [x] Integration de TipTap 3 (ProseMirror) dans les dialogs d'arguments
+- [x] Barre d'outils WYSIWYG : Gras, Italique, Souligne, Surligne, Titres, Listes, Citations, Indentation, Alignement, Undo/Redo
+- [x] Composant reutilisable `RichTextEditor` (`components/ui/rich-text-editor.tsx`)
+- [x] Composant d'affichage `RichTextDisplay` (`components/ui/rich-text-display.tsx`)
+- [x] Affichage formate dans le panneau lateral et les reformulations IA
+- [x] Apercu texte brut dans les noeuds du graphe (strip HTML)
+- [x] Compatibilite export PDF (strip HTML pour @react-pdf/renderer)
+- [x] Plugin `@tailwindcss/typography` pour les styles prose
+
 ### Ameliorations Futures (optionnel)
 - [ ] Collaboration en temps reel
 - [ ] Version mobile (Progressive Web App)
@@ -398,8 +432,10 @@
 
 ### 8.1 Criteres Fonctionnels
 - [x] Un utilisateur peut creer un compte et se connecter
+- [x] Un utilisateur peut gerer son profil (modifier, changer mdp, supprimer)
 - [x] Un utilisateur peut creer, modifier et supprimer des dossiers
 - [x] Un utilisateur peut construire un graphe d'arguments avec relations
+- [x] Le contenu des arguments peut etre formate (gras, italique, listes, etc.)
 - [x] Les sources peuvent etre associees aux arguments
 - [x] L'IA analyse les arguments et propose des ameliorations
 - [x] L'export PDF et Word genere des documents exploitables
@@ -480,6 +516,6 @@
 ---
 
 **Date de creation** : 11 fevrier 2026
-**Derniere mise a jour** : 11 fevrier 2026
-**Version** : 2.0
+**Derniere mise a jour** : 15 fevrier 2026
+**Version** : 3.0
 **Auteur** : Equipe ARGUMINDS

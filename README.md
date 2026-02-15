@@ -15,6 +15,7 @@
 | **UI** | Tailwind CSS 4 + Shadcn/UI (New York) |
 | **Graphes** | React Flow (@xyflow/react) + dagre |
 | **IA** | Groq API (Llama 3.3 70B) |
+| **Éditeur riche** | TipTap (ProseMirror) |
 | **Export** | jsPDF + html2canvas (PDF), docx (Word) |
 | **Tests** | Playwright (e2e) |
 | **Déploiement** | Vercel (région cdg1) |
@@ -35,6 +36,7 @@
 - Relations parent/enfant avec connexion drag & drop
 - Layout automatique (dagre) et sauvegarde des positions
 - Panneau latéral avec détails, sources liées et analyse IA
+- **Éditeur de texte riche** (TipTap) : Gras, Italique, Souligné, Surligné, Titres, Listes à puces/numérotées, Citations, Indentation, Alignement, Undo/Redo
 
 ### Sources juridiques
 - Bibliothèque centralisée de sources par dossier
@@ -50,6 +52,12 @@
 ### Export
 - **PDF** — Document complet avec graphe, arguments hiérarchisés et sources
 - **Word (.docx)** — Export serveur avec tableau des sources
+
+### Profil utilisateur
+- Consultation du profil (avatar, nom, email, rôle, date d'inscription, statistiques)
+- Modification du nom et de l'email
+- Changement de mot de passe sécurisé (vérification de l'ancien)
+- Suppression de compte avec confirmation
 
 ### Autres
 - Authentification email/mot de passe avec hachage bcrypt
@@ -69,7 +77,8 @@
 │   │   ├── login/                  # Connexion
 │   │   └── register/               # Inscription
 │   ├── (dashboard)/
-│   │   └── dashboard/              # Liste des dossiers + détail
+│   │   ├── dashboard/              # Liste des dossiers + détail
+│   │   └── profile/                # Page de profil utilisateur
 │   └── api/
 │       ├── ai/analyze/             # Endpoint IA (analyze, suggest, reformulate)
 │       ├── auth/[...nextauth]/     # Auth.js
@@ -79,9 +88,9 @@
 │   │                               # AiAnalysisPanel, Dialogs (Add, Edit, Delete, Link)
 │   ├── sources/                    # SourcesManager, Dialogs
 │   ├── export/                     # ExportButtons (PDF/Word)
-│   └── ui/                         # Shadcn/UI (Button, Dialog, Sheet, etc.)
+│   └── ui/                         # Shadcn/UI + RichTextEditor, RichTextDisplay
 ├── lib/
-│   ├── actions/                    # Server Actions (arguments, cases, sources)
+│   ├── actions/                    # Server Actions (arguments, cases, sources, profile)
 │   ├── ai/groq.ts                  # Client Groq SDK
 │   ├── export/                     # generate-pdf.ts, format-arguments.ts
 │   ├── queries/                    # Requêtes Prisma
@@ -192,6 +201,8 @@ La configuration Vercel (`vercel.json`) inclut :
 - [x] Phase 4 — Sources juridiques (CRUD, liaison arguments)
 - [x] Phase 5 — Export PDF/Word, tests e2e, optimisation, déploiement
 - [x] Phase 6 — Intelligence Artificielle (Groq : analyse, suggestions, reformulation)
+- [x] Phase 7 — Profil utilisateur (CRUD, changement de mot de passe, suppression de compte)
+- [x] Phase 8 — Éditeur de texte riche (TipTap : formatage WYSIWYG des arguments)
 - [ ] Collaboration en temps réel
 - [ ] Version mobile (PWA)
 
