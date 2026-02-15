@@ -45,9 +45,14 @@ const TYPE_LABELS: Record<string, string> = {
   REFUTATION: "Réfutation",
 }
 
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, "").replace(/&[^;]+;/g, " ").trim()
+}
+
 function ArgumentNodeComponent({ data }: NodeProps) {
   const nodeData = data as unknown as ArgumentNodeData
   const style = TYPE_STYLES[nodeData.type] ?? TYPE_STYLES.PRINCIPAL
+  const plainContent = stripHtml(nodeData.content)
 
   return (
     <div
@@ -62,7 +67,7 @@ function ArgumentNodeComponent({ data }: NodeProps) {
           </Badge>
           <p className="truncate text-sm font-semibold">{nodeData.title}</p>
           <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-            {nodeData.content}
+            {plainContent}
           </p>
         </div>
         <div className="nodrag nopan flex gap-1">

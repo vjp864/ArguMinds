@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 import { toast } from "sonner"
 import { updateArgument } from "@/lib/actions/arguments"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
   Select,
   SelectContent,
@@ -46,8 +46,11 @@ export function EditArgumentDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const [contentHtml, setContentHtml] = useState(argument.content)
+
   const [state, formAction, pending] = useActionState(
     async (prev: { error?: string } | undefined, formData: FormData) => {
+      formData.set("content", contentHtml)
       const result = await updateArgument(argument.id, caseId, prev, formData)
       if (result?.success) {
         onOpenChange(false)
@@ -70,6 +73,7 @@ export function EditArgumentDialog({
           </DialogDescription>
         </DialogHeader>
         <form action={formAction}>
+          <input type="hidden" name="content" value={contentHtml} />
           <div className="space-y-4 py-4">
             {state?.error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
@@ -86,14 +90,11 @@ export function EditArgumentDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-content">Contenu</Label>
-              <Textarea
-                id="edit-content"
-                name="content"
-                defaultValue={argument.content}
-                rows={8}
-                className="min-h-[120px] max-h-[300px] overflow-y-auto"
-                required
+              <Label>Contenu</Label>
+              <RichTextEditor
+                content={argument.content}
+                onChange={setContentHtml}
+                placeholder="Développez votre argument..."
               />
             </div>
             <div className="space-y-2">

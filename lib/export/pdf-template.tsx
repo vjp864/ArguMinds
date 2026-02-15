@@ -228,7 +228,9 @@ function ArgumentCardComponent({
           <Text>{getTypeLabel(node.type)}</Text>
         </View>
         <Text style={styles.argumentTitle}>{node.title}</Text>
-        <Text style={styles.argumentContent}>{node.content}</Text>
+        <Text style={styles.argumentContent}>
+          {node.content?.replace(/<[^>]*>/g, "").replace(/&[^;]+;/g, " ").trim()}
+        </Text>
         {node.sources.length > 0 && (
           <Text style={styles.argumentSources}>
             Sources : {node.sources.map((s) => s.title).join(", ")}

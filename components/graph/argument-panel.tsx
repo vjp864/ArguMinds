@@ -14,6 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { RichTextDisplay } from "@/components/ui/rich-text-display"
 import { AiAnalysisPanel } from "./ai-analysis-panel"
 import { LinkSourceDialog } from "./link-source-dialog"
 
@@ -105,9 +106,10 @@ export function ArgumentPanel({
                 <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Contenu
                 </h3>
-                <p className="whitespace-pre-wrap text-justify text-sm leading-relaxed">
-                  {argument.content}
-                </p>
+                <RichTextDisplay
+                  content={argument.content}
+                  className="text-justify"
+                />
               </div>
 
               <Separator />

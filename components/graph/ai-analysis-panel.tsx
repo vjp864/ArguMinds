@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { updateArgument } from "@/lib/actions/arguments"
 import { deleteAiAnalysis } from "@/lib/actions/ai-analyses"
+import { RichTextDisplay } from "@/components/ui/rich-text-display"
 
 type AnalysisResult = {
   weight: number
@@ -410,9 +411,10 @@ export function AiAnalysisPanel({
                 <RefreshCw className="h-3 w-3" />
                 Reformulation proposée
               </p>
-              <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-                {reformulation.reformulated}
-              </p>
+              <RichTextDisplay
+                content={reformulation.reformulated}
+                className="text-xs text-muted-foreground"
+              />
               <Separator />
               <Button
                 size="sm"
@@ -511,9 +513,12 @@ export function AiAnalysisPanel({
                   )}
 
                   {entry.action === "reformulate" && (
-                    <p className="whitespace-pre-wrap text-xs text-muted-foreground">
-                      {(entry.result as ReformulateResult).reformulated}
-                    </p>
+                    <RichTextDisplay
+                      content={
+                        (entry.result as ReformulateResult).reformulated
+                      }
+                      className="text-xs text-muted-foreground"
+                    />
                   )}
                 </div>
               ))}
